@@ -1,0 +1,82 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.auth-page {
+  max-width: 360px;
+  margin: 4rem auto;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.auth-form input,
+.auth-form button {
+  padding: 0.6rem;
+  font-size: 1rem;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.error {
+  color: #dc2626;
+  font-size: 0.9rem;
+}
+
+.pin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 200px;
+}
+
+.hint {
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0.5rem;
+}
+
+.password-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0.25rem 0;
+  text-align: left;
+  font-size: 0.85rem;
+  align-self: flex-start;
+  width: 100%;
+}
+
+.check-icon {
+  width: 1rem;
+  display: inline-block;
+}
+
+.check-icon.unmet {
+  color: #dc2626;
+}
+
+.check-icon.met {
+  color: #16a34a;
+}
