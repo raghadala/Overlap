@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import PasswordChecklist, { passwordMeetsRequirements } from '../components/PasswordChecklist';
 
@@ -10,8 +11,22 @@ export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [error, setError] = useState<string | null>(null);
   const [passwordFocused, setPasswordFocused] = useState(false);
-  const { login, signup } = useAuth();
+  const { login, signup, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  async function handleGoogleSuccess(credentialResponse: { credential?: string }) {
+    setError(null);
+    if (!credentialResponse.credential) {
+      setError('Google did not return a credential');
+      return;
+    }
+    try {
+      await loginWithGoogle(credentialResponse.credential);
+      navigate('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Google sign-in failed');
+    }
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -59,6 +74,10 @@ export default function LoginPage() {
       <button className="link-button" onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>
         {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Log in'}
       </button>
+
+      <div className="google-login">
+        <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => setError('Google sign-in failed')} />
+      </div>
     </div>
   );
 }
