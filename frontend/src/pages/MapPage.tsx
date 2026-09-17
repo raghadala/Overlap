@@ -7,11 +7,6 @@ import type { Pin, OverlappingPin } from '../api/client';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
-// rough Canada bounds
-const CANADA_BOUNDS: [[number, number], [number, number]] = [
-  [41.7, -141],
-  [83.1, -52.6],
-];
 const CANADA_CENTER: [number, number] = [56.1304, -106.3468];
 
 const pinIcon = new L.Icon.Default();
@@ -71,10 +66,9 @@ function AddressSearch({ onSelect }: { onSelect: (lat: number, lng: number) => v
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
       try {
-        const params = new URLSearchParams({
+                const params = new URLSearchParams({
           q: query,
-          limit: '5',
-          bbox: '-141,41.7,-52.6,83.1',
+          limit: '10',
         });
         const res = await fetch(`https://photon.komoot.io/api/?${params}`);
         const data = await res.json();
@@ -88,7 +82,13 @@ function AddressSearch({ onSelect }: { onSelect: (lat: number, lng: number) => v
           return true;
         });
 
-        setResults(deduped);
+          const priority = (f: PhotonFeature) => {
+          const country = f.properties.country;
+          return country === 'Canada' || country === 'United States' ? 0 : 1;
+        };
+        deduped.sort((a, b) => priority(a) - priority(b));
+
+        setResults(deduped.slice(0, 5));
       } catch {
         setResults([]);
       } finally {
@@ -112,7 +112,7 @@ function AddressSearch({ onSelect }: { onSelect: (lat: number, lng: number) => v
     <div className="address-search">
       <input
         type="text"
-        placeholder="Search for an address or place in Canada"
+        placeholder="Search for an address or place"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
@@ -199,8 +199,6 @@ export default function MapPage() {
       <MapContainer
         center={CANADA_CENTER}
         zoom={4}
-        maxBounds={CANADA_BOUNDS}
-        maxBoundsViscosity={1.0}
         style={{ height: '70vh', width: '100%' }}
       >
         <TileLayer
