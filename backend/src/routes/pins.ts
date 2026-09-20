@@ -44,15 +44,37 @@ router.post('/', requireAuth, async (req, res) => {
 
 router.get('/mine', requireAuth, async (req, res) => {
   const result = await pool.query(
-    `SELECT id, ST_Y(location::geometry) AS latitude, ST_X(location::geometry) AS longitude,
-            radius_m, note, category, created_at, expires_at
-     FROM pins
-     WHERE user_id = $1 AND expires_at > now()
-     ORDER BY created_at DESC`,
+    `SELECT p.id, ST_Y(p.location::geometry) AS latitude, ST_X(p.location::geometry) AS longitude,
+            p.radius_m, p.note, p.category, p.created_at, p.expires_at,
+            (SELECT count(*) FROM pins o
+              WHERE o.user_id != p.user_id
+                AND o.expires_at > now()
+                AND ST_DWithin(o.location, p.location, o.radius_m + p.radius_m)
+            ) AS nearby_count,
+            (SELECT count(*) FROM connection_requests cr WHERE cr.from_pin_id = p.id) AS sent_count,
+            (SELECT count(*) FROM connection_requests cr WHERE cr.to_pin_id = p.id) AS received_count
+     FROM pins p
+     WHERE p.user_id = $1 AND p.expires_at > now()
+     ORDER BY p.created_at DESC`,
     [req.userId]
   );
 
   res.json(result.rows);
+});
+
+router.delete('/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+
+  const result = await pool.query('DELETE FROM pins WHERE id = $1 AND user_id = $2 RETURNING id', [
+    id,
+    req.userId,
+  ]);
+
+  if (result.rows.length === 0) {
+    return res.status(404).json({ error: 'Pin not found' });
+  }
+
+  res.status(204).send();
 });
 
 router.get('/:id/overlapping', requireAuth, async (req, res) => {
