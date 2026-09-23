@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
 import type { Pin, OverlappingPin } from '../api/client';
@@ -13,7 +14,7 @@ const pinIcon = new L.Icon.Default();
 
 interface PhotonFeature {
   geometry: {
-    coordinates: [number, number]; // [lon, lat]
+    coordinates: [number, number];
   };
   properties: {
     name?: string;
@@ -66,7 +67,7 @@ function AddressSearch({ onSelect }: { onSelect: (lat: number, lng: number) => v
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
       try {
-                const params = new URLSearchParams({
+        const params = new URLSearchParams({
           q: query,
           limit: '10',
         });
@@ -82,7 +83,7 @@ function AddressSearch({ onSelect }: { onSelect: (lat: number, lng: number) => v
           return true;
         });
 
-          const priority = (f: PhotonFeature) => {
+        const priority = (f: PhotonFeature) => {
           const country = f.properties.country;
           return country === 'Canada' || country === 'United States' ? 0 : 1;
         };
@@ -189,7 +190,10 @@ export default function MapPage() {
     <div className="map-page">
       <header>
         <h2>Overlap</h2>
-        <button onClick={logout}>Log out</button>
+        <div className="header-actions">
+          <Link to="/dashboard">My Pins</Link>
+          <button onClick={logout}>Log out</button>
+        </div>
       </header>
 
       {error && <p className="error">{error}</p>}
