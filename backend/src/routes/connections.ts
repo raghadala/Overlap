@@ -43,6 +43,22 @@ router.get('/outgoing', requireAuth, async (req, res) => {
   res.json(result.rows);
 });
 
+router.get('/incoming', requireAuth, async (req, res) => {
+  const result = await pool.query(
+    `SELECT cr.id, cr.status, cr.created_at,
+            pf.note AS from_note, pf.category AS from_category,
+            pt.id AS to_pin_id
+     FROM connection_requests cr
+     JOIN pins pf ON pf.id = cr.from_pin_id
+     JOIN pins pt ON pt.id = cr.to_pin_id
+     WHERE pt.user_id = $1 AND cr.status = 'pending'
+     ORDER BY cr.created_at DESC`,
+    [req.userId]
+  );
+
+  res.json(result.rows);
+});
+
 router.post('/:id/respond', requireAuth, async (req, res) => {
   const { id } = req.params;
   const { accept } = req.body as { accept?: boolean };
