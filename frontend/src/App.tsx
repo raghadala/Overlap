@@ -4,10 +4,10 @@ import { AuthProvider } from './context/AuthContext';
 import RequireAuth from './components/RequireAuth';
 import LoginPage from './pages/LoginPage';
 import MapPage from './pages/MapPage';
+import DashboardPage from './pages/DashboardPage';
 import './App.css';
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-console.log('Google Client ID:', googleClientId);
 
 function App() {
   return (
@@ -21,6 +21,14 @@ function App() {
               element={
                 <RequireAuth>
                   <MapPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <RequireAuth>
+                  <DashboardPage />
                 </RequireAuth>
               }
             />

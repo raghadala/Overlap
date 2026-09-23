@@ -18,6 +18,10 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     body: body ? JSON.stringify(body) : undefined,
   });
 
+  if (res.status === 204) {
+    return undefined as T;
+  }
+
   const data = await res.json();
 
   if (!res.ok) {
@@ -41,6 +45,9 @@ export interface Pin {
   category: 'missed_connection' | 'lost_item' | 'photo_moment';
   created_at: string;
   expires_at: string;
+  nearby_count: string;
+  sent_count: string;
+  received_count: string;
 }
 
 export interface OverlappingPin {
@@ -55,6 +62,24 @@ export interface ConnectionRequest {
   id: number;
   status: 'pending' | 'accepted' | 'declined';
   created_at: string;
+}
+
+export interface IncomingRequest {
+  id: number;
+  status: 'pending' | 'accepted' | 'declined';
+  created_at: string;
+  from_note: string;
+  from_category: string;
+  to_pin_id: number;
+}
+
+export interface OutgoingRequest {
+  id: number;
+  status: 'pending' | 'accepted' | 'declined';
+  created_at: string;
+  to_note: string;
+  to_category: string;
+  from_pin_id: number;
 }
 
 export const api = {
@@ -72,6 +97,9 @@ export const api = {
 
   myPins: (token: string) => request<Pin[]>('/pins/mine', { token }),
 
+  deletePin: (token: string, pinId: number) =>
+    request<void>(`/pins/${pinId}`, { method: 'DELETE', token }),
+
   overlappingPins: (token: string, pinId: number) =>
     request<OverlappingPin[]>(`/pins/${pinId}/overlapping`, { token }),
 
@@ -83,4 +111,8 @@ export const api = {
 
   getConnection: (token: string, requestId: number) =>
     request<{ status: string; contacts?: { userId: number; email: string }[] }>(`/connections/${requestId}`, { token }),
+
+  incomingRequests: (token: string) => request<IncomingRequest[]>('/connections/incoming', { token }),
+
+  outgoingRequests: (token: string) => request<OutgoingRequest[]>('/connections/outgoing', { token }),
 };
