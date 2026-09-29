@@ -5,6 +5,7 @@ import cors from 'cors';
 import authRoutes from './routes/auth';
 import pinRoutes from './routes/pins';
 import connectionRoutes from './routes/connections';
+import { startPinCleanupJob } from './jobs/cleanupExpiredPins';
 
 const app = express();
 app.use(cors());
@@ -17,4 +18,7 @@ app.use('/connections', connectionRoutes);
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Overlap API listening on port ${port}`));
+app.listen(port, () => {
+  console.log(`Overlap API listening on port ${port}`);
+  startPinCleanupJob();
+});

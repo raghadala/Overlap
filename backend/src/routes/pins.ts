@@ -30,7 +30,7 @@ router.post('/', requireAuth, async (req, res) => {
   }
 
   const radius = radiusMeters || 200;
-  const days = activeDays || DEFAULT_ACTIVE_DAYS;
+  const days = activeDays ?? DEFAULT_ACTIVE_DAYS;
 
   const result = await pool.query(
     `INSERT INTO pins (user_id, location, radius_m, note, category, expires_at)
