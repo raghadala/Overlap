@@ -59,6 +59,28 @@ router.get('/incoming', requireAuth, async (req, res) => {
   res.json(result.rows);
 });
 
+// mutually accepted connections, from the point of view of the current user:
+// whichever side they were on, return the other person's details
+router.get('/accepted', requireAuth, async (req, res) => {
+  const result = await pool.query(
+    `SELECT cr.id, cr.created_at,
+            CASE WHEN pf.user_id = $1 THEN ut.email ELSE uf.email END AS contact_email,
+            CASE WHEN pf.user_id = $1 THEN pt.note ELSE pf.note END AS their_note,
+            CASE WHEN pf.user_id = $1 THEN pt.category ELSE pf.category END AS their_category,
+            CASE WHEN pf.user_id = $1 THEN pf.note ELSE pt.note END AS my_note
+     FROM connection_requests cr
+     JOIN pins pf ON pf.id = cr.from_pin_id
+     JOIN pins pt ON pt.id = cr.to_pin_id
+     JOIN users uf ON uf.id = pf.user_id
+     JOIN users ut ON ut.id = pt.user_id
+     WHERE cr.status = 'accepted' AND (pf.user_id = $1 OR pt.user_id = $1)
+     ORDER BY cr.created_at DESC`,
+    [req.userId]
+  );
+
+  res.json(result.rows);
+});
+
 router.post('/:id/respond', requireAuth, async (req, res) => {
   const { id } = req.params;
   const { accept } = req.body as { accept?: boolean };
