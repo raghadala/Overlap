@@ -82,6 +82,15 @@ export interface OutgoingRequest {
   from_pin_id: number;
 }
 
+export interface Connection {
+  id: number;
+  created_at: string;
+  contact_email: string;
+  their_note: string;
+  their_category: string;
+  my_note: string;
+}
+
 export const api = {
   signup: (email: string, password: string) =>
     request<AuthResponse>('/auth/signup', { method: 'POST', body: { email, password } }),
@@ -115,4 +124,6 @@ export const api = {
   incomingRequests: (token: string) => request<IncomingRequest[]>('/connections/incoming', { token }),
 
   outgoingRequests: (token: string) => request<OutgoingRequest[]>('/connections/outgoing', { token }),
+
+  connections: (token: string) => request<Connection[]>('/connections/accepted', { token }),
 };

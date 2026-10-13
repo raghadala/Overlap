@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
-import type { Pin, IncomingRequest, OutgoingRequest, OverlappingPin } from '../api/client';
+import type { Pin, IncomingRequest, OutgoingRequest, OverlappingPin, Connection } from '../api/client';
 
-type Tab = 'active' | 'received' | 'sent';
+type Tab = 'active' | 'received' | 'sent' | 'connections';
 
 const CATEGORY_LABELS: Record<string, string> = {
   missed_connection: 'Missed connection',
@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [pins, setPins] = useState<Pin[]>([]);
   const [incoming, setIncoming] = useState<IncomingRequest[]>([]);
   const [outgoing, setOutgoing] = useState<OutgoingRequest[]>([]);
+  const [connections, setConnections] = useState<Connection[]>([]);
   const [expandedPin, setExpandedPin] = useState<number | null>(null);
   const [nearbyByPin, setNearbyByPin] = useState<Record<number, OverlappingPin[]>>({});
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +40,7 @@ export default function DashboardPage() {
     api.myPins(token).then(setPins).catch((err) => setError(err.message));
     api.incomingRequests(token).then(setIncoming).catch((err) => setError(err.message));
     api.outgoingRequests(token).then(setOutgoing).catch((err) => setError(err.message));
+    api.connections(token).then(setConnections).catch((err) => setError(err.message));
   }
 
   async function toggleExpand(pin: Pin) {
@@ -105,6 +107,9 @@ export default function DashboardPage() {
         </button>
         <button className={tab === 'sent' ? 'active' : ''} onClick={() => setTab('sent')}>
           Sent <span className="tab-count">{outgoing.length}</span>
+        </button>
+        <button className={tab === 'connections' ? 'active' : ''} onClick={() => setTab('connections')}>
+          Connections <span className="tab-count">{connections.length}</span>
         </button>
       </div>
 
@@ -181,6 +186,25 @@ export default function DashboardPage() {
                 <p>{r.to_note}</p>
               </div>
               <span className={`status-badge status-${r.status}`}>{r.status}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === 'connections' && (
+        <div className="dashboard-list">
+          {connections.length === 0 && (
+            <p className="hint">No connections yet. Accepted requests show up here.</p>
+          )}
+          {connections.map((c) => (
+            <div key={c.id} className="connection-card">
+              <strong>{c.contact_email}</strong>
+              <p className="connection-note">
+                {CATEGORY_LABELS[c.their_category] || c.their_category}: {c.their_note}
+              </p>
+              <p className="connection-meta">
+                Requested {new Date(c.created_at).toLocaleDateString()} &middot; Your pin: {c.my_note}
+              </p>
             </div>
           ))}
         </div>

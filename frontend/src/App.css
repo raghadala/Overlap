@@ -305,3 +305,20 @@ header {
   background: #fee2e2;
   color: #991b1b;
 }
+
+.connection-card {
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 0.9rem;
+}
+
+.connection-note {
+  margin: 0.25rem 0 0;
+  color: #444;
+}
+
+.connection-meta {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: #888;
+}
